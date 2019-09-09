@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-FROM golang:1.12.9
-RUN mkdir /searchapp
-ADD . /searchapp/
-WORKDIR /searchapp
-COPY . /searchapp
+FROM golang
+WORKDIR /go/src/esapp
+ADD . /go/src/esapp
+RUN go get github.com/elastic/go-elasticsearch
+RUN go get github.com/gorilla/mux
+RUN go get github.com/gorilla/sessions
+RUN go get golang.org/x/crypto/bcrypt
+RUN go install -v ./...
 
-RUN go build -o search .
+ENTRYPOINT /go/bin/esapp
 
-CMD [ ./searchapp/search" ]
+EXPOSE 8000

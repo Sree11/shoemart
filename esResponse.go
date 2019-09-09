@@ -87,7 +87,7 @@ func esGet(read *strings.Reader, c chan<- SearchMetrics) {
 	ctx := context.Background()
 
 	esCfg := elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
+		Addresses: []string{"http://127.0.0.1:9200"},
 	}
 
 	client, err := elasticsearch.NewClient(esCfg)

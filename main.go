@@ -5,32 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/elastic/go-elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
 
 var templates *template.Template
 var store = sessions.NewCookieStore([]byte("secret"))
-
-func init() {
-	log.SetFlags(0)
-
-	ESCfg := elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
-	}
-
-	Client, err := elasticsearch.NewClient(ESCfg)
-	if err != nil {
-		log.Fatalf("Error creating client: %s", err)
-
-	}
-	esinfo, err := Client.Info()
-	if err != nil {
-		log.Fatalf("Error getting response:%s", err)
-	}
-	log.Println(esinfo)
-}
 
 func main() {
 	templates = template.Must(template.ParseGlob("templates/*.html"))
