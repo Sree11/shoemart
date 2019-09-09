@@ -29,6 +29,10 @@ I have created a docker image for both golang webapp and the elasticsearch app, 
 Create an index with the name shoemart and load the csv date through kibana that would work 
 
 On of the two will work for sure but both apps in docker is not working, I tried fixing it but was out of time, you can run the build on golang app and run it, it should run on port 8000 localhost:8000/
+if you want to run the elasticsearch docker please use the below command from the elasticfolder 
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 \
+  -v $PWD/data:/usr/share/elasticsearch/data  -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-:7.3.0
+  as it will mount the data folder into elasticsearch container
 
 Apologize that I ran into these docker issues, tried really hard to fix it but will try again to get it right.
 
