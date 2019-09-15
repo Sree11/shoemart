@@ -5,13 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/elastic/go-elasticsearch"
 )
 
 func regularQuery(es *SearchRequest) string {
@@ -77,19 +76,6 @@ func esQuery(es *SearchRequest) *strings.Reader {
 func esGet(read *strings.Reader, c chan<- SearchMetrics) {
 	var wg sync.WaitGroup
 
-	log.SetFlags(0)
-	ctx := context.Background()
-
-	esCfg := elasticsearch.Config{
-		Addresses: []string{"http://127.0.0.1:9200"},
-	}
-
-	client, err := elasticsearch.NewClient(esCfg)
-	if err != nil {
-		log.Fatalf("Error creating client: %s", err)
-		return
-	}
-
 	var mapResp map[string]interface{}
 	var buf bytes.Buffer
 
@@ -98,6 +84,8 @@ func esGet(read *strings.Reader, c chan<- SearchMetrics) {
 		return
 	}
 
+	ctx := context.Background()
+	client := EsInit()
 	res, err := client.Search(
 		client.Search.WithContext(ctx),
 		client.Search.WithIndex("shoemart"),
@@ -119,6 +107,17 @@ func esGet(read *strings.Reader, c chan<- SearchMetrics) {
 		log.Fatalf("Fatal error parsing json %s", err)
 		return
 	}
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		log.Fatal(readErr)
+	}
+
+	esresults, eserr := UnmarshalESResult(body)
+	if eserr != nil {
+		fmt.Println("error parsing with unmarshall ", eserr)
+	}
+	fmt.Println("Here it comes ========")
+	fmt.Println(esresults)
 
 	esMetrics := SearchMetrics{}
 	esMetrics.Hits = int(mapResp["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"].(float64))

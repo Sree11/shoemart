@@ -5,12 +5,29 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/elastic/go-elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
 
 var templates *template.Template
 var store = sessions.NewCookieStore([]byte("secret"))
+
+//EsInit for init
+func EsInit() (esClient *elasticsearch.Client) {
+	log.SetFlags(0)
+
+	esCfg := elasticsearch.Config{
+		Addresses: []string{"http://127.0.0.1:9200"},
+	}
+
+	client, err := elasticsearch.NewClient(esCfg)
+	if err != nil {
+		log.Fatalf("Error creating client: %s", err)
+		return
+	}
+	return client
+}
 
 func main() {
 	templates = template.Must(template.ParseGlob("templates/*.html"))
@@ -37,6 +54,5 @@ func AddV1Routes(r *mux.Router) {
 	r.HandleFunc("/products", enforceAuth(productPostHandler)).Methods("POST")
 
 	r.HandleFunc("/search", enforceAuth(searchGetHandler)).Methods("GET")
-	//r.HandleFunc("/search", enforceAuth(searchPostHandler)).Methods("POST")
 
 }
