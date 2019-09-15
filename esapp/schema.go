@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 //SearchRequest will store the Request parameters
 type SearchRequest struct {
 	Query       string
@@ -29,4 +31,61 @@ type SearchMetrics struct {
 	Hits          int
 	Time          int
 	SearchResults []SearchResult
+}
+
+// type Sort struct {
+// 	Score string `json:"_score"`
+// }
+type MultiMatch struct {
+	Query  string   `json:"query"`
+	Fields []string `json:"fields"`
+}
+type Query struct {
+	MultiMatch MultiMatch `json:"multi_match"`
+}
+type RegularQuery struct {
+	Query Query                  `json:"query"`
+	Sort  map[string]interface{} `json:"sort"`
+	Size  string                 `json:"size"`
+	From  string                 `json:"from"`
+}
+
+//Marshal the unmarshall
+func (r *RegularQuery) Marshal() ([]byte, error) {
+	return json.MarshalIndent(r, "", " ")
+}
+
+//==================================================
+
+type FilterQuery struct {
+	FQuery FQuery                 `json:"query"`
+	Sort   map[string]interface{} `json:"sort"`
+	Size   string                 `json:"size"`
+	From   string                 `json:"from"`
+}
+
+type FQuery struct {
+	Bool Bool `json:"bool"`
+}
+
+type Bool struct {
+	Must   Must   `json:"must"`
+	Filter Filter `json:"filter"`
+}
+
+type Filter struct {
+	Match map[string]interface{} `json:"match"`
+}
+
+type Must struct {
+	Match MustMatch `json:"match"`
+}
+
+type MustMatch struct {
+	Name string `json:"name"`
+}
+
+func (r *FilterQuery) Marshal() ([]byte, error) {
+
+	return json.MarshalIndent(r, "", " ")
 }

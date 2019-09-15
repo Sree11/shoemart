@@ -15,45 +15,39 @@ import (
 )
 
 func regularQuery(es *SearchRequest) string {
-	var regularQ = `
-	{
-		"query": {
-			"multi_match": {
-				"query": "` + strings.ToLower(es.Query) + `",
-                "fields":["name", "brand", "colors", "currency"]
-				}
-			},
-			"sort":{"` + strings.ToLower(es.SortKey) + `":"` + strings.ToLower(es.SortValue) + `"},
-			"size":"` + fmt.Sprintf("%d", es.Limit) + `",
-			"from":"` + strconv.Itoa(es.Offset) + `"
-				
-	}`
-	return regularQ
+	var rq RegularQuery
+	fieldstr := []string{"name", "brand", "colors", "currency"}
+	SortField := map[string]interface{}{"price": "desc"}
+	for _, item := range fieldstr {
+		rq.Query.MultiMatch.Fields = append(rq.Query.MultiMatch.Fields, item)
+	}
+	rq.Query.MultiMatch.Query = strings.ToLower(es.Query)
+	rq.Sort = SortField
+	rq.Size = strconv.Itoa(es.Limit)
+	rq.From = strconv.Itoa(es.Offset)
+	jsonrq, _ := rq.Marshal()
+	return string(jsonrq)
 
 }
 func filterQuery(es *SearchRequest) string {
-	var filterQ = ` {
-		"query": {
-		  "bool": {
-			"must": {
-			  "match": {
-				"name": "` + strings.ToLower(es.Query) + `"
-			  }
-			},
-			"filter":{
-			"match":{
-			"` + strings.ToLower(es.FilterKey) + `":"` + strings.ToLower(es.FilterValue) + `"}}
-		  }
-		},
-		"sort":{"` + strings.ToLower(es.SortKey) + `":"` + strings.ToLower(es.SortValue) + `"},
-			"size":"` + strconv.Itoa(es.Limit) + `",
-			"from":"` + strconv.Itoa(es.Offset) + `"
-	  }`
-	return filterQ
+	var fq FilterQuery
+	filterstr := map[string]interface{}{strings.ToLower(es.FilterKey): strings.ToLower(es.FilterValue)}
+	SortField := map[string]interface{}{strings.ToLower(es.SortKey): strings.ToLower(es.SortValue)}
+
+	fq.FQuery.Bool.Must.Match.Name = strings.ToLower(es.Query)
+	fq.FQuery.Bool.Filter.Match = filterstr
+
+	fq.Sort = SortField
+	fq.Size = strconv.Itoa(es.Limit)
+	fq.From = strconv.Itoa(es.Offset)
+	jsonfq, _ := fq.Marshal()
+	fmt.Printf(string(jsonfq))
+	return string(jsonfq)
 
 }
 
 func esQuery(es *SearchRequest) *strings.Reader {
+
 	var query string
 	if es.NoFilter {
 		query = regularQuery(es)
